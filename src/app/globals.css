@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+/* --- VARIABLES CSS --- */
+:root {
+  --color-bg: #ffffff;
+  --color-text: #000000;
+  --color-border: #000000;
+  --color-hover: #000000;
+  --color-link-underline: #000000;
+  --gray-dark: #222222; /* <- AJOUT OBLIGATOIRE */
+}
+
+
+/* --- RESET GÉNÉRAL --- */
+* {
+  box-sizing: border-box;
+}
+
+/* --- BODY --- */
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  scroll-behavior: smooth;
+}
+/* --- LIENS --- */
+a {
+  @apply relative inline-block transition duration-200 no-underline;
+  color: var(--color-text);
+}
+
+a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 1px;
+  background-color: var(--color-link-underline);
+  transition: width 0.3s ease-in-out;
+}
+
+a:hover::after {
+  width: 100%;
+}
+.section-divider {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  background-color: transparent;
+  overflow: hidden;
+  margin: 4rem auto;
+}
+
+.section-divider::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background-color: var(--color-border); /* Remplace --gray-dark si besoin */
+  animation: grow-bar 2s ease-out infinite;
+}
+
+@keyframes grow-bar {
+  0% {
+    width: 0%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    width: 100%;
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 0;
+  }
+}
