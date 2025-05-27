@@ -18,7 +18,7 @@ export function BarFlowDemo() {
 
   return (
     <div
-      className="h-[400vh] bg-white w-full dark:border dark:border-white/[0.1] rounded-md relative pt-40 overflow-clip"
+      className="h-[300vh] bg-white w-full dark:border dark:border-white/[0.1] rounded-md relative pt-40 overflow-clip"
       ref={ref}>
       <BarFlowComponents
         pathLengths={[
