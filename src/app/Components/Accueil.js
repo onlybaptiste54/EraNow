@@ -7,7 +7,7 @@ export default function Accueil() {
       <div className="max-w-3xl text-center">
         <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
           Bienvenue chez{" "}
-          <span className="bg-gradient-to-r from-black to-gray-600 bg-clip-text text-transparent underline decoration-black decoration-2 underline-offset-4">
+          <span className=" title-divider bg-gradient-to-r from-black to-gray-600 bg-clip-text text-transparent underline decoration-black decoration-2 underline-offset-4">
             EraNow
           </span>
         </h1>

@@ -62,6 +62,26 @@ a:hover::after {
   width: 0%;
   background-color: var(--color-border); /* Remplace --gray-dark si besoin */
   animation: grow-bar 2s ease-out infinite;
+  will-change: width, opacity;
+}
+.title-divider {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  background-color: transparent;
+  overflow: hidden;
+  margin: 4rem auto;
+}
+.title-divider::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background-color: var(--color-border); /* Remplace --gray-dark si besoin */
+animation: title-bar 4s ease-out forwards;
+  will-change: width, opacity;
 }
 
 @keyframes grow-bar {
@@ -78,6 +98,24 @@ a:hover::after {
   }
   100% {
     width: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes title-bar {
+  0% {
+    width: 100%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    width: 10%;
+    opacity: 1;
+  }
+  100% {
+    width:0%;
     opacity: 0;
   }
 }
