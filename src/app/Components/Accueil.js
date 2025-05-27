@@ -1,3 +1,5 @@
+import React from "react";
+import { TextChange } from "./TextChange";
 export default function Accueil() {
   return (
     <section
@@ -7,16 +9,17 @@ export default function Accueil() {
       <div className="max-w-3xl text-center">
         <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
           Bienvenue chez{" "}
-          <span className=" title-divider bg-gradient-to-r from-black to-gray-600 bg-clip-text text-transparent underline decoration-black decoration-2 underline-offset-4">
+          <span className="bg-gradient-to-r from-black to-gray-600 bg-clip-text text-transparent underline decoration-black decoration-2 underline-offset-4">
             EraNow
           </span>
         </h1>
 
-        <p className="text-base md:text-lg text-gray-500 italic mb-6">
-          Spécialistes en automatisation intelligente, IA conversationnelle et digitalisation des processus métier.
-        </p>
+        <h2 className="text-2xl text-gray-500 italic mb-6">
+          Spécialistes en<span>   <TextChange/>
+          </span>
+        </h2>
 
-        <p className="text-lg md:text-xl max-w-2xl mx-auto mb-8 animate-fade-in-delay">
+        <p className="text-lg text-neutral-700 md:text-xl max-w-2xl mx-auto mb-8 animate-fade-in-delay">
           EraNow est votre partenaire pour des solutions numériques innovantes. Depuis 2023, nous aidons les entreprises
           à digitaliser leurs processus avec des sites web modernes et des automatisations sur mesure.
         </p>

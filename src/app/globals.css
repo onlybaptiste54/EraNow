@@ -102,20 +102,5 @@ animation: title-bar 4s ease-out forwards;
   }
 }
 
-@keyframes title-bar {
-  0% {
-    width: 100%;
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    width: 10%;
-    opacity: 1;
-  }
-  100% {
-    width:0%;
-    opacity: 0;
-  }
-}
+
+
