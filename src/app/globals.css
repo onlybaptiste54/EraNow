@@ -29,6 +29,14 @@ a {
   @apply relative inline-block transition duration-200 no-underline;
   color: var(--color-text);
 }
+.button {
+  @apply inline-block px-8 py-3 rounded-full font-medium border border-black text-cyan-700 bg-white transition-colors duration-300 ease-in-out;
+}
+
+.button:hover {
+  @apply bg-cyan-100 bg-black;
+}
+
 
 a::after {
   content: '';
@@ -102,5 +110,15 @@ animation: title-bar 4s ease-out forwards;
   }
 }
 
+@keyframes floating {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
 
-
+.animate-floating {
+  animation: floating 4s ease-in-out infinite;
+}

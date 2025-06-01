@@ -20,7 +20,19 @@ export default function Navbar() {
       }`}
     >
       <nav className="max-w-6xl mx-auto h-full flex items-center justify-between px-4">
-        <div className="text-xl font-bold tracking-tight">EraNow</div>
+        {/* LOGO + TEXTE */}
+        <div className="flex items-center space-x-2">
+          <img
+            src="/logotest.png"
+            alt="Logo"
+            className="h-32 w-auto"
+          />
+          <span className="text-cyan-700 text-xl font-bold tracking-tight">
+            AetherIa
+          </span>
+        </div>
+
+        {/* NAVIGATION avec boutons */}
         <ul className="flex space-x-6 text-sm font-medium">
           {[
             ['#accueil', 'Accueil'],
@@ -29,17 +41,14 @@ export default function Navbar() {
             ['#contact', 'Contact'],
           ].map(([href, label]) => (
             <li key={label}>
-              <a
-                href={href}
-                className="group relative transition-colors"
+              <button
+                onClick={() => {
+                  document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="button"
               >
-                <span className="text-black group-hover:text-gray-700 transition-colors">
-                  {label}
-                </span>
-                <span
-                  className="absolute left-0 -bottom-0.5 h-[1px] w-0 bg-black transition-all duration-300 group-hover:w-full"
-                ></span>
-              </a>
+                {label}
+              </button>
             </li>
           ))}
         </ul>
