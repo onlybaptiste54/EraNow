@@ -25,7 +25,8 @@ className="min-h-screen flex items-center justify-center text-neutral-700 border
           </h2>
 
        <p className="text-lg text-neutral-700 md:text-xl max-w-2xl mb-8 animate-fade-in-delay">
-  Réinventez votre <span className="text-cyan-700 font-semibold">productivité</span> grâce à l<span>'</span>intelligence artificielle.
+  Réinventez votre <span className="text-cyan-700 font-semibold">productivité</span> grâce à l{"'"}intelligence artificielle
+
   Optimisez vos processus avec une automatisation intelligente, conçue spécialement pour vous.
 </p>
 
