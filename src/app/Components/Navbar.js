@@ -1,6 +1,6 @@
 'use client';
-
 import { useEffect, useState } from 'react';
+import DarkComponent from './DarkComponent'; // Assurez-vous que le chemin est correct
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -15,8 +15,10 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 w-full h-20 z-50 border-b border-black transition-all duration-300 ${
-        scrolled ? 'bg-white/70 backdrop-blur-md shadow-sm' : 'bg-white'
+      className={`fixed top-0 w-full h-20 z-50 border-b border-[var(--color-border)] transition-all duration-300 ${
+        scrolled
+          ? 'bg-[var(--color-bg)]/70 backdrop-blur-md shadow-sm'
+          : 'bg-[var(--color-bg)]'
       }`}
     >
       <nav className="max-w-6xl mx-auto h-full flex items-center justify-between px-4">
@@ -27,7 +29,7 @@ export default function Navbar() {
             alt="Logo"
             className="h-32 w-auto"
           />
-          <span className="text-cyan-700 text-xl font-bold tracking-tight">
+          <span className="text-cyan-700 dark:text-cyan-300 text-xl font-bold tracking-tight">
             AetherIa
           </span>
         </div>
@@ -52,6 +54,7 @@ export default function Navbar() {
             </li>
           ))}
         </ul>
+        <DarkComponent />
       </nav>
     </header>
   );

@@ -1,15 +1,24 @@
 @import "tailwindcss";
+@custom-tailwind dark:base variant@dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 /* --- VARIABLES CSS --- */
 :root {
   --color-bg: #ffffff;
-  --color-text: #000000;
+  --color-text: #333333;
   --color-border: #000000;
   --color-hover: #000000;
   --color-link-underline: #000000;
-  --gray-dark: #222222; /* <- AJOUT OBLIGATOIRE */
+  --gray-dark: #222222;
 }
 
+:root[data-theme="dark"] {
+  --color-bg: #222222; /* Gris foncé (gray-900) */
+  --color-text: #e2e8f0; /* Gris clair (gray-200) */
+  --color-border: #4b5563; /* Gris moyen (gray-600) */
+  --color-hover: #4b5563; /* Gris moyen pour hover */
+  --color-link-underline: #06b6d4; /* Cyan pour les liens */
+  --gray-dark: #e2e8f0; /* Gris clair pour remplacer le gris foncé */
+}
 
 /* --- RESET GÉNÉRAL --- */
 * {
@@ -17,27 +26,59 @@
 }
 
 /* --- BODY --- */
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-bg);
+  color: var(--color-text);
   font-family: var(--font-sans);
   scroll-behavior: smooth;
 }
+
+/* --- STYLES GLOBAUX AVEC TAILWIND --- */
+h1 {
+  @apply text-4xl md:text-6xl font-bold;
+  color: var(--color-text);
+}
+
+h2 {
+  @apply text-2xl italic;
+  color: #6b7280; /* gray-500 */
+}
+:root[data-theme="dark"] h2 {
+  color: #9ca3af; /* gray-400 */
+}
+ul {
+  @apply list-none pl-6 space-y-2 text-sm sm:text-base;
+  color: #1f2937; /* gray-800 */
+}
+:root[data-theme="dark"] ul {
+  color: #e5e7eb; /* gray-200 */
+}
+p {
+  @apply text-lg md:text-xl;
+  color: #374151; /* neutral-700 */
+}
+:root[data-theme="dark"] p {
+  color: #d1d5db; /* gray-300 */
+}
+
 /* --- LIENS --- */
 a {
   @apply relative inline-block transition duration-200 no-underline;
   color: var(--color-text);
 }
+
 .button {
-  @apply inline-block px-8 py-3 rounded-full font-medium border border-black text-cyan-700 bg-white transition-colors duration-300 ease-in-out;
+  @apply inline-block px-8 py-3 rounded-full font-medium border transition-colors duration-300 ease-in-out;
+  border-color: var(--color-border);
+  color: #06b6d4; /* Cyan-700 pour le texte */
+  background: var(--color-bg);
 }
 
 .button:hover {
-  @apply bg-cyan-100 bg-black;
+  @apply bg-cyan-100 dark:bg-cyan-900;
 }
 
-
+/* Animation des liens */
 a::after {
   content: '';
   position: absolute;
@@ -52,6 +93,8 @@ a::after {
 a:hover::after {
   width: 100%;
 }
+
+/* Diviseurs */
 .section-divider {
   position: relative;
   height: 2px;
@@ -68,10 +111,11 @@ a:hover::after {
   left: 0;
   height: 100%;
   width: 0%;
-  background-color: var(--color-border); /* Remplace --gray-dark si besoin */
+  background-color: var(--color-border);
   animation: grow-bar 2s ease-out infinite;
   will-change: width, opacity;
 }
+
 .title-divider {
   position: relative;
   height: 2px;
@@ -80,6 +124,7 @@ a:hover::after {
   overflow: hidden;
   margin: 4rem auto;
 }
+
 .title-divider::before {
   content: '';
   position: absolute;
@@ -87,11 +132,12 @@ a:hover::after {
   left: 0;
   height: 100%;
   width: 0%;
-  background-color: var(--color-border); /* Remplace --gray-dark si besoin */
-animation: title-bar 4s ease-out forwards;
+  background-color: var(--color-border);
+  animation: title-bar 4s ease-out forwards;
   will-change: width, opacity;
 }
 
+/* Animations */
 @keyframes grow-bar {
   0% {
     width: 0%;

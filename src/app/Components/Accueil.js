@@ -4,10 +4,11 @@ import Image from "next/image";
 
 export default function Accueil() {
   return (
+  <>
+
     <section
       id="accueil"
-      className="min-h-screen bg-white flex items-center justify-center text-neutral-700 border-t border-black z-10 relative overflow-hidden px-4"
-    >
+className="min-h-screen flex items-center justify-center text-neutral-700 border-t border-black z-10 relative overflow-hidden px-4"      >
       <div className="container mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-10">
         
         {/* Texte à gauche */}
@@ -37,19 +38,18 @@ export default function Accueil() {
         </div>
 
         {/* Image à droite */}
-        <div className="w-full md:w-1/2 flex justify-center md:justify-end">
-        <Image
-  src="/machine2.svg"
-  alt="Illustration automatisation"
-  width={500}
-  height={500}
-  className="max-w-full h-auto animate-floating"
-  priority
-/>
+      <div className="w-full md:w-1/2 flex justify-center md:justify-end">
+  <img
+    src="/ArtificialHome.svg"
+    alt="Illustration automatisation"
+    className="max-w-full h-auto animate-floating"
+    />
+</div>
 
-        </div>
 
       </div>
     </section>
+  
+    </>
   );
 }
