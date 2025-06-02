@@ -25,7 +25,7 @@ export default function Navbar() {
         {/* LOGO + TEXTE */}
         <div className="flex items-center space-x-2">
           <img
-            src="/logotest.png"
+            src="/Logotest.png"
             alt="Logo"
             className="h-32 w-auto"
           />
