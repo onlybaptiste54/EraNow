@@ -1,0 +1,218 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "search-financial",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-search",
+      "name": "Search Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validation et préparation de la requête de recherche\nconst body = $input.item().body;\n\n// Valider les paramètres d'entrée\nif (!body.query || typeof body.query !== 'string') {\n  throw new Error('Le paramètre \"query\" est requis et doit être une chaîne de caractères');\n}\n\nconst query = body.query.trim();\nif (query.length < 3) {\n  throw new Error('La requête doit contenir au moins 3 caractères');\n}\n\n// Paramètres optionnels avec valeurs par défaut\nconst topK = Math.min(Math.max(parseInt(body.topK) || 5, 1), 20); // Entre 1 et 20\nconst category = body.category || null; // Filtrage par catégorie optionnel\nconst minScore = parseFloat(body.minScore) || 0.7; // Score minimum de similarité\n\n// Préparer les métadonnées pour le filtrage\nlet filter = {};\nif (category) {\n  filter.category = { \"$eq\": category };\n}\n\nreturn {\n  searchQuery: query,\n  topK: topK,\n  filter: Object.keys(filter).length > 0 ? filter : undefined,\n  minScore: minScore,\n  requestId: Date.now().toString(),\n  timestamp: new Date().toISOString()\n};"
+      },
+      "id": "validate-request",
+      "name": "Validate & Prepare Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "patrimoinlarge",
+          "mode": "id"
+        },
+        "topK": "={{ $json.topK }}",
+        "options": {
+          "pineconeNamespace": "via-ap-financial"
+        }
+      },
+      "id": "search-pinecone",
+      "name": "Search Pinecone",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1,
+      "position": [
+        600,
+        400
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "lar1dNJdKEtXb8pU",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1024
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        580
+      ],
+      "id": "search-embeddings",
+      "name": "Search Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "vTgGweofG2w3gAnT",
+          "name": "OpenAi account entreprise"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Traitement et formatage des résultats de recherche\nconst items = $input.all();\nconst requestData = items[0];\n\n// Si pas de résultats\nif (!items || items.length === 0) {\n  return {\n    success: true,\n    query: requestData.searchQuery,\n    results: [],\n    total: 0,\n    message: \"Aucun résultat trouvé pour cette recherche\",\n    requestId: requestData.requestId,\n    timestamp: requestData.timestamp\n  };\n}\n\n// Traiter les résultats\nconst results = items.slice(1).map((item, index) => {\n  const content = item.pageContent || item.document || '';\n  \n  // Extraire les informations du contenu structuré\n  const titleMatch = content.match(/TITRE: (.+?)\\n/);\n  const categoryMatch = content.match(/CATÉGORIE: (.+?)\\n/);\n  const descriptionMatch = content.match(/DESCRIPTION: (.+?)\\n/);\n  const urlMatch = content.match(/URL SOURCE: (.+?)\\n/);\n  \n  // Extraire un extrait pertinent\n  let excerpt = content.replace(/TITRE:.*?CONTENU PRINCIPAL:\\n/s, '').substring(0, 300);\n  if (excerpt.length === 300) {\n    excerpt += '...';\n  }\n  \n  return {\n    id: index + 1,\n    title: titleMatch ? titleMatch[1].trim() : 'Document financier',\n    category: categoryMatch ? categoryMatch[1].trim() : 'Non catégorisé',\n    description: descriptionMatch ? descriptionMatch[1].trim() : '',\n    source_url: urlMatch ? urlMatch[1].trim() : '',\n    excerpt: excerpt.trim(),\n    score: item.metadata?.score || 0,\n    relevance: item.metadata?.score > 0.8 ? 'high' : item.metadata?.score > 0.7 ? 'medium' : 'low'\n  };\n});\n\n// Filtrer par score minimum si spécifié\nconst filteredResults = results.filter(result => \n  result.score >= requestData.minScore\n);\n\n// Grouper par catégorie pour une meilleure présentation\nconst categories = {};\nfilteredResults.forEach(result => {\n  if (!categories[result.category]) {\n    categories[result.category] = [];\n  }\n  categories[result.category].push(result);\n});\n\nreturn {\n  success: true,\n  query: requestData.searchQuery,\n  results: filteredResults,\n  total: filteredResults.length,\n  categories: categories,\n  filters_applied: {\n    min_score: requestData.minScore,\n    category: requestData.filter?.category?.$eq || null\n  },\n  requestId: requestData.requestId,\n  timestamp: requestData.timestamp,\n  processing_time_ms: Date.now() - parseInt(requestData.requestId)\n};"
+      },
+      "id": "format-results",
+      "name": "Format Search Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-webhook",
+      "name": "Send Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        600,
+        580
+      ],
+      "id": "document-loader",
+      "name": "Document Loader"
+    }
+  ],
+  "connections": {
+    "Search Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate & Prepare Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Prepare Request": {
+      "main": [
+        [
+          {
+            "node": "Search Pinecone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Pinecone": {
+      "main": [
+        [
+          {
+            "node": "Format Search Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Search Results": {
+      "main": [
+        [
+          {
+            "node": "Send Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Search Pinecone",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Search Pinecone",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "223514caa351ca4e46c3b7978d620dbcf7cb412efd0057cb31ea7ffade5c8b3e"
+  }
+}
