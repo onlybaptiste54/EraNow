@@ -1,0 +1,346 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "urls",
+              "value": "https://www.via-ap.com/conseil-financier/pea/,https://www.via-ap.com/conseil-financier/per/,https://www.via-ap.com/conseil-financier/assurance-vie/,https://www.via-ap.com/conseil-financier/as/,https://www.via-ap.com/conseil-financier/assurance-vie-luxembourg/,https://www.via-ap.com/conseil-financier/super-livret/,https://www.via-ap.com/conseil-financier/private-equity/,https://www.via-ap.com/conseil-financier/courtage-credit/,https://www.via-ap.com/conseil-financier/loi-malraux/,https://www.via-ap.com/conseil-financier/lmnp/,https://www.via-ap.com/conseil-financier/scpi/,https://www.via-ap.com/conseil-financier/monument-historique/,https://www.via-ap.com/conseil-financier/residence-de-service/,https://www.via-ap.com/conseil-financier/nue-propriete/"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "351f18c2-a011-48e0-a540-662604d96865",
+      "name": "Start URLs",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -420,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "fieldName": "urls",
+        "options": {}
+      },
+      "id": "0f601a59-7a14-4b23-91f1-4501818ed637",
+      "name": "Split URLs",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -220,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.urls }}",
+        "responseFormat": "string",
+        "options": {
+          "timeout": 30000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          },
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "625018da-b63b-49a7-979c-130cb750f88a",
+      "name": "Fetch HTML",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -20,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "content",
+              "cssSelector": "main, article, .content, #content, body"
+            },
+            {
+              "key": "title",
+              "cssSelector": "title"
+            },
+            {
+              "key": "description",
+              "cssSelector": "meta[name='description']",
+              "attributeName": "content"
+            },
+            {
+              "key": "h1",
+              "cssSelector": "h1"
+            },
+            {
+              "key": "h2_headers",
+              "cssSelector": "h2"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "59b2bf25-0a4b-4610-908d-1541016eaea7",
+      "name": "Extract HTML Content",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        180,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nettoyage et enrichissement du contenu\nconst item = $input.item();\n\n// Nettoyer le contenu HTML\nlet cleanContent = item.content || '';\n\n// Supprimer les scripts, styles et éléments indésirables\ncleanContent = cleanContent\n  .replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi, '')\n  .replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, '')\n  .replace(/<nav[^>]*>[\\s\\S]*?<\\/nav>/gi, '')\n  .replace(/<footer[^>]*>[\\s\\S]*?<\\/footer>/gi, '')\n  .replace(/<header[^>]*>[\\s\\S]*?<\\/header>/gi, '')\n  .replace(/<!--[\\s\\S]*?-->/g, '')\n  .replace(/<[^>]+>/g, ' ') // Supprimer toutes les balises HTML\n  .replace(/\\s+/g, ' ') // Normaliser les espaces\n  .trim();\n\n// Extraire la catégorie depuis l'URL\nconst url = item.urls || '';\nlet category = 'general';\nif (url.includes('/pea/')) category = 'PEA';\nelse if (url.includes('/per/')) category = 'PER';\nelse if (url.includes('/assurance-vie/')) category = 'Assurance Vie';\nelse if (url.includes('/scpi/')) category = 'SCPI';\nelse if (url.includes('/lmnp/')) category = 'LMNP';\nelse if (url.includes('/private-equity/')) category = 'Private Equity';\nelse if (url.includes('/malraux/')) category = 'Loi Malraux';\nelse if (url.includes('/monument-historique/')) category = 'Monument Historique';\nelse if (url.includes('/residence-de-service/')) category = 'Résidence de Service';\nelse if (url.includes('/nue-propriete/')) category = 'Nue-Propriété';\nelse if (url.includes('/super-livret/')) category = 'Super Livret';\nelse if (url.includes('/courtage-credit/')) category = 'Courtage Crédit';\nelse if (url.includes('/as/')) category = 'Assurance Santé';\nelse if (url.includes('/luxembourg/')) category = 'Assurance Vie Luxembourg';\n\n// Créer un titre enrichi\nconst title = item.title || item.h1 || 'Document financier';\nconst description = item.description || '';\n\n// Construire le document structuré\nconst structuredContent = `TITRE: ${title}\n\nCATÉGORIE: ${category}\n\nDESCRIPTION: ${description}\n\nURL SOURCE: ${url}\n\nCONTENU PRINCIPAL:\n${cleanContent}`;\n\n// Vérifier que le contenu n'est pas vide ou trop court\nif (cleanContent.length < 100) {\n  return []; // Skip ce document s'il est trop court\n}\n\n// Générer un ID unique basé sur l'URL\nconst documentId = Buffer.from(url).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 50);\n\nreturn {\n  document: structuredContent,\n  source: url,\n  title: title,\n  category: category,\n  description: description,\n  content_length: cleanContent.length,\n  document_id: documentId,\n  processed_date: new Date().toISOString(),\n  headers: item.h2_headers || ''\n};"
+      },
+      "id": "content-processor",
+      "name": "Process & Clean Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        380,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "patrimoinlarge",
+          "mode": "id"
+        },
+        "options": {
+          "pineconeNamespace": "via-ap-financial"
+        }
+      },
+      "id": "4d4b2a40-2a97-496a-bc67-1b16e27e16bd",
+      "name": "Pinecone Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1,
+      "position": [
+        740,
+        600
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "lar1dNJdKEtXb8pU",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1024
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        700,
+        780
+      ],
+      "id": "94b0f67e-7fd6-492b-9f59-4961a7e4d17a",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "vTgGweofG2w3gAnT",
+          "name": "OpenAi account entreprise"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        900,
+        760
+      ],
+      "id": "8af75f4a-119a-4d8b-8c3e-2437e570d8ab",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 1500,
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        900,
+        960
+      ],
+      "id": "8e365ebc-2aca-4832-92fe-9bfcabad85a9",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "processed"
+            },
+            {
+              "name": "url",
+              "value": "={{ $json.source }}"
+            },
+            {
+              "name": "category",
+              "value": "={{ $json.category }}"
+            },
+            {
+              "name": "content_length",
+              "value": "={{ $json.content_length }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "progress-tracker",
+      "name": "Track Progress",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        580,
+        600
+      ]
+    }
+  ],
+  "connections": {
+    "Start URLs": {
+      "main": [
+        [
+          {
+            "node": "Split URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split URLs": {
+      "main": [
+        [
+          {
+            "node": "Fetch HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract HTML Content": {
+      "main": [
+        [
+          {
+            "node": "Process & Clean Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process & Clean Content": {
+      "main": [
+        [
+          {
+            "node": "Track Progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Track Progress": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Split URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch HTML": {
+      "main": [
+        [
+          {
+            "node": "Extract HTML Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "223514caa351ca4e46c3b7978d620dbcf7cb412efd0057cb31ea7ffade5c8b3e"
+  }
+}
